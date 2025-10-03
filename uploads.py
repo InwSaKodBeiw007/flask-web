@@ -16,7 +16,7 @@ def user(name):
 
 
 
-@app.route('/uploads/<path:filename>')
+@app.route('/uploads/<path:filename>',methods=["GET"])
 def upanddown(filename):
     return send_from_directory(uploadPath,filename)
 
