@@ -73,31 +73,20 @@ def uploadgimmic():
 
 @app.route('/receive', methods=['GET','POST'])
 def receive():
-    global latest_answer
-    data = request.json
-    latest_answer = data.get("answer")
+    data = request.json or {}
+    data.get("answer")
 
-    threading.Thread(target=on_new_answer, args=(latest_answer,), daemon=True).start()
+    def on_new_answer(answer):
+        # ส่งคำตอบไปให้ project.py POST ไป endpoint localhost://9000
+        try:
+            requests.post(url="http://localhost:9000/new-answer", json={"answer": data}, timeout=3)
+        except Exception as e:
+            print("Error sending :", e)
 
-    return jsonify({"status": "ok", "received": latest_answer})
+    threading.Thread(target=on_new_answer, args=(data,), daemon=True).start()
 
+    return jsonify({"status": "ok", "received": data})
 
-def on_new_answer(answer):
-    # ส่งคำตอบไปให้ project.py POST ไป endpoint localhost://9000
-    try:
-        requests.post("http://localhost:9000/new-answer", json={"answer": answer}, timeout=3)
-    except Exception as e:
-        print("Error sending :", e)
-
-@app.route('/get-latest-answer', methods=['GET'])
-def get_latest():
-    return jsonify({"answer": latest_answer})
-
-@app.route('/clear-answer', methods=['POST'])
-def clear_answer():
-    global latest_answer
-    latest_answer = None
-    return jsonify({"status": "cleared"})
 
 if __name__ == "__main__":
     app.run(port=8000, debug=False)
