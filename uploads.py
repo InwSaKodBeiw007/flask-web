@@ -7,8 +7,8 @@ latest_answer = None    ## จำเป็นต้องประกาศต�
 
 uploadPath = "uploads"
 # n8n Webhook URL
-# N8N_WEBHOOK_URL = "http://localhost:5678/webhook/new-image"
-N8N_WEBHOOK_URL = "http://localhost:5678/webhook-test/new-image"
+N8N_WEBHOOK_URL = "http://localhost:5678/webhook/new-image"
+# N8N_WEBHOOK_URL = "http://localhost:5678/webhook-test/new-image"
 
 @app.route('/')
 def index():
