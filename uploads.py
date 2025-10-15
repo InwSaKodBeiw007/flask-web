@@ -79,7 +79,7 @@ def receive():
     def on_new_answer(answer):
         # ส่งคำตอบไปให้ project.py POST ไป endpoint localhost://9000
         try:
-            requests.post(url="http://localhost:9000/new-answer", json={"answer": data}, timeout=3)
+            requests.post(url="http://localhost:9000/new-answer", json={"answer": data}, timeout=3) ## should be "answer": answer?
         except Exception as e:
             print("Error sending :", e)
 
