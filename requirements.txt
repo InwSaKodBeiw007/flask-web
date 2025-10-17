@@ -1,0 +1,4 @@
+cvzone
+numpy
+requests
+flask

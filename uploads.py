@@ -7,7 +7,8 @@ latest_answer = None    ## จำเป็นต้องประกาศต�
 
 uploadPath = "uploads"
 # n8n Webhook URL
-N8N_WEBHOOK_URL = "http://localhost:5678/webhook/new-image"
+N8N_WEBHOOK_URL = "http://n8n:5678/webhook/new-image"
+# N8N_WEBHOOK_URL = "http://localhost:5678/webhook/new-image"
 # N8N_WEBHOOK_URL = "http://localhost:5678/webhook-test/new-image"
 
 @app.route('/')
@@ -19,12 +20,13 @@ def user(name):
     return 'Hello {} my master'.format(name)
 
 
-
+## http://flask-web:8000/uploads/drawing_1760631474.png
 
 @app.route('/uploads/<path:filename>',methods=["GET"])
 def upanddown(filename):
     return send_from_directory(uploadPath,filename)
 
+## ถูกเรียกจาก project.py เมื่อมีการอัพโหลดไฟล์ใหม่
 @app.route('/uploads',methods=["POST"])
 def uploadgimmic():
 ## เช็ค 'file' ได้จาก request.files ได้เพราะเราต้องเข้าถึง url= http://host.docker.internal:8000/uploads ก่อน request ถึงจะมี requset.files ได้, ซึ่ง มันรอจนกว่าจะมีคนเข้าถึง def(function) นี้ถึงทำงาน
@@ -40,7 +42,8 @@ def uploadgimmic():
     file.save(filePath)
 
     # สร้าง URL สำหรับดาวน์โหลด
-    get_url_path = f"http://host.docker.internal:8000/uploads/{file.filename}"
+    # get_url_path = f"http://host.docker.internal:8000/uploads/{file.filename}"
+    get_url_path = f"http://flask-web:8000/uploads/{file.filename}"
 
     def send_n8n_webhook(file_info):
         ## แจ้ง n8n ว่ามีไฟล์ใหม่ (ส่ง metadata ไป)
@@ -71,6 +74,7 @@ def uploadgimmic():
         "url":get_url_path   ## โยนให้เป็น get
     }),201
 
+''' ไม่ได้ใช้ เราให้ n8n ดึงจาก uploads ไปแล้วให้มัน post ไปที่ http://iphostmachine:9000/new-answer แทน'''
 @app.route('/receive', methods=['GET','POST'])
 def receive():
     data = request.json or {}
@@ -79,7 +83,8 @@ def receive():
     def on_new_answer(answer):
         # ส่งคำตอบไปให้ project.py POST ไป endpoint localhost://9000
         try:
-            requests.post(url="http://localhost:9000/new-answer", json={"answer": data}, timeout=3) ## should be "answer": answer?
+            # requests.post(url="http://localhost:9000/new-answer", json={"answer": data}, timeout=3) ## should be "answer": answer?
+            requests.post(url="http://192.168.1.8:9000/new-answer", json={"answer": answer}, timeout=3) ## เปลี่ยนเป็น ip ของ host machine เพราะกูใช้ docker-compose รัน server flask | n8n ใน container
         except Exception as e:
             print("Error sending :", e)
 
@@ -89,4 +94,4 @@ def receive():
 
 
 if __name__ == "__main__":
-    app.run(port=8000, debug=False)
+    app.run(host="0.0.0.0", port=8000, debug=False) ## เปลี่ยน host เป็น localhost ทำให้ใน docker container มองเห็น server นี้ได้
